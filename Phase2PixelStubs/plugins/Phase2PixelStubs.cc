@@ -44,6 +44,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "TLorentzVector.h"
 #include "TH1D.h"
+#include "TCanvas.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -56,6 +57,7 @@
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
+
 //
 // class declaration
 //
@@ -139,7 +141,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //Adding protection
   if ( !Phase2TrackerDigiTTStubHandle.isValid() )  return;
 
-  std::cout << contentIter->size() << std::endl;
+  TH1* h1 = new TH1I("h1", "Number of Stubs", 6, 0.0, 8.0);
 
   int temp;//, counter = 0;
   std::vector<int> stubPerEvent;
@@ -157,16 +159,19 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     }
 
   std::cout << stubPerEvent.size() << std::endl;
-  /*
+  
   int i = 0;
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
         ++inputIter )
     {
-      std::cout << stubPerEvent[i];
+      //std::cout << stubPerEvent[i];
+      h1->Fill(stubPerEvent[i]);
       i++;
     }
-  */
+
+  TCanvas* hcanvas = new TCanvas("hcanvas","Canvas 1",100,100,800,800);
+  hcanvas->SaveAs("NStubs.pdf");  
 }
 
 

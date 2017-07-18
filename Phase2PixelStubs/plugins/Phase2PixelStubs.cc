@@ -132,14 +132,16 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > Phase2TrackerDigiTTStubHandle;
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
-
+ 
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
   typename edmNew::DetSet< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator contentIter;
   //Adding protection
   if ( !Phase2TrackerDigiTTStubHandle.isValid() )  return;
 
-  int temp, i = 0;//, counter = 0;
+  std::cout << contentIter->size() << std::endl;
+
+  int temp;//, counter = 0;
   std::vector<int> stubPerEvent;
 
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
@@ -149,16 +151,14 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       temp = 0;
       for ( contentIter = inputIter->begin(); contentIter != inputIter->end(); ++contentIter )
 	{
-	  /// Make reference stub
-	  edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
-	  //	  ++counter;
 	  temp++;
 	}
       stubPerEvent.push_back(temp);
     }
 
-  //  std::cout << stubPerEvent.size() << std::endl;
-
+  std::cout << stubPerEvent.size() << std::endl;
+  /*
+  int i = 0;
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
         ++inputIter )
@@ -166,7 +166,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       std::cout << stubPerEvent[i];
       i++;
     }
-
+  */
 }
 
 

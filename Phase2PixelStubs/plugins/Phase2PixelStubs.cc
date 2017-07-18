@@ -157,9 +157,8 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       stubPerEvent.push_back(temp);
     }
 
-  std::cout << stubPerEvent.size() << std::endl;
+  //  std::cout << stubPerEvent.size() << std::endl;
 
-  /*
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
         ++inputIter )
@@ -167,7 +166,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       std::cout << stubPerEvent[i];
       i++;
     }
-  */
+
 }
 
 

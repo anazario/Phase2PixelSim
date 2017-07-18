@@ -139,6 +139,35 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //Adding protection
   if ( !Phase2TrackerDigiTTStubHandle.isValid() )  return;
 
+  int temp, i = 0;//, counter = 0;
+  std::vector<int> stubPerEvent;
+
+  for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
+        inputIter != Phase2TrackerDigiTTStubHandle->end();
+        ++inputIter )
+    {  
+      temp = 0;
+      for ( contentIter = inputIter->begin(); contentIter != inputIter->end(); ++contentIter )
+	{
+	  /// Make reference stub
+	  edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
+	  //	  ++counter;
+	  temp++;
+	}
+      stubPerEvent.push_back(temp);
+    }
+
+  std::cout << stubPerEvent.size() << std::endl;
+
+  /*
+  for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
+        inputIter != Phase2TrackerDigiTTStubHandle->end();
+        ++inputIter )
+    {
+      std::cout << stubPerEvent[i];
+      i++;
+    }
+  */
 }
 
 

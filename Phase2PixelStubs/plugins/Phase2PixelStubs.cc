@@ -141,7 +141,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //Adding protection
   if ( !Phase2TrackerDigiTTStubHandle.isValid() )  return;
 
-  TH1* h1 = new TH1I("h1", "Number of Stubs", 6, 0.0, 8.0);
+  TH1* h1 = new TH1I("h1", "Number of Stubs", 8, 0.0, 8.0);
 
   int temp;//, counter = 0;
   std::vector<int> stubPerEvent;
@@ -157,8 +157,8 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	}
       stubPerEvent.push_back(temp);
     }
-
-  std::cout << stubPerEvent.size() << std::endl;
+  int vecSize = stubPerEvent.size();
+  std::cout << vecSize << std::endl;
   
   int i = 0;
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
@@ -166,12 +166,27 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         ++inputIter )
     {
       //std::cout << stubPerEvent[i];
-      h1->Fill(stubPerEvent[i]);
+      if (stubPerEvent[i] == 1)
+	h1->Fill(stubPerEvent[i],1);
+      if (stubPerEvent[i] == 2)
+        h1->Fill(stubPerEvent[i],2);
+      if (stubPerEvent[i] == 3)
+        h1->Fill(stubPerEvent[i],3);
+      if (stubPerEvent[i] == 4)
+        h1->Fill(stubPerEvent[i],4);
+      if (stubPerEvent[i] == 5)
+        h1->Fill(stubPerEvent[i],5);
+      if (stubPerEvent[i] == 6)
+        h1->Fill(stubPerEvent[i],6);
       i++;
     }
 
+  std::string intstr = std::to_string(vecSize);
+  TString name = intstr + "NStubs.pdf";
   TCanvas* hcanvas = new TCanvas("hcanvas","Canvas 1",100,100,800,800);
-  hcanvas->SaveAs("NStubs.pdf");  
+  h1->Draw("HIST");
+  hcanvas->SaveAs("../plugins/plots/"+name);
+  delete hcanvas;
 }
 
 

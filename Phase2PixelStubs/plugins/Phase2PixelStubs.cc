@@ -42,13 +42,16 @@
 #include "DataFormats/Common/interface/View.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+
+//root
 #include "TLorentzVector.h"
 #include "TH1D.h"
 #include "TCanvas.h"
+#include <TTree.h>
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-//#include "DQM/Phase2OuterTracker/interface/OuterTrackerMonitorTTStub.h"
+#include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
@@ -82,11 +85,21 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
+
   TH1F * h_stub;
 
-      // ----------member data ---------------------------
+  // ----------member data ---------------------------
   edm::InputTag stubSrc_;
   edm::EDGetTokenT<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >  StubTok_;
+
+  // ----------Tree and branches for mini-tuple ---------------------------
+  TTree* eventTree;
+
+  std::vector<float>* stub_pt;        // pt
+  std::vector<float>* stub_eta;       // eta
+  std::vector<float>* stub_phi;       // phi
+
+  std::vector<int>*   nstub; //number of stubs
 };
 
 //
@@ -103,14 +116,10 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
 Phase2PixelStubs::Phase2PixelStubs(const edm::ParameterSet& iConfig)
 
 {
-  edm::Service<TFileService> fs;
-  h_stub = fs->make<TH1F>("StubAccepted", "StubAccepted", 5, 0, 5);
-
   stubSrc_ = iConfig.getParameter<edm::InputTag>("TTStubs");
 
   StubTok_ = consumes<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >(stubSrc_);
 
-  //produces<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >("StubAccepted");
 }
 
 
@@ -132,8 +141,14 @@ void
 Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
+  stub_pt->clear();
+  stub_eta->clear();
+  stub_phi->clear();
+  nstub->clear();
+
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > Phase2TrackerDigiTTStubHandle;
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
+  edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
  
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
@@ -144,7 +159,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   TH1* h1 = new TH1I("h1", "Number of Stubs", 11, 0.0, 11.0);
 
   int temp;//, counter = 0;
-  std::vector<int> stubPerEvent;
+  std::vector<int> stubPerEvent, Nstubs;
 
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
@@ -158,7 +173,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       stubPerEvent.push_back(temp);
     }
   int vecSize = stubPerEvent.size();
-  std::cout << vecSize << std::endl;
+  //std::cout << vecSize << std::endl;
   
   int i = 0;
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
@@ -171,7 +186,10 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  h1->Fill(stubPerEvent[i],j);
       } 
       i++;
+      nstub->push_back(vecSize);
     }
+
+  Nstubs.push_back(vecSize);
 
   std::string intstr = std::to_string(vecSize);
   TString name = intstr + "NStubs.pdf";
@@ -180,13 +198,31 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   gPad->SetLogy();
   hcanvas->SaveAs("../plugins/plots/"+name);
   delete hcanvas;
+
+  eventTree->Fill();
 }
+
 
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
 Phase2PixelStubs::beginJob()
 {
+  edm::Service<TFileService> fs;
+
+  stub_pt = new std::vector<float>;
+  stub_eta = new std::vector<float>;    
+  stub_phi = new std::vector<float>;    
+
+  nstub = new std::vector<int>;
+
+  // ntuple
+  eventTree = fs->make<TTree>("eventTree", "Event tree");
+
+  eventTree->Branch("stub_pt",     &stub_pt);
+  eventTree->Branch("stub_eta",    &stub_eta);
+  eventTree->Branch("stub_phi",    &stub_phi);
+  eventTree->Branch("nstub",     &nstub);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

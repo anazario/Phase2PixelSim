@@ -166,24 +166,11 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         ++inputIter )
     {
       //std::cout << stubPerEvent[i];
-      if (stubPerEvent[i] == 1)
-	h1->Fill(stubPerEvent[i],1);
-      if (stubPerEvent[i] == 2)
-        h1->Fill(stubPerEvent[i],2);
-      if (stubPerEvent[i] == 3)
-        h1->Fill(stubPerEvent[i],3);
-      if (stubPerEvent[i] == 4)
-        h1->Fill(stubPerEvent[i],4);
-      if (stubPerEvent[i] == 5)
-        h1->Fill(stubPerEvent[i],5);
-      if (stubPerEvent[i] == 6)
-        h1->Fill(stubPerEvent[i],6);
-      if (stubPerEvent[i] == 7)
-        h1->Fill(stubPerEvent[i],7);
-      if (stubPerEvent[i] == 8)
-        h1->Fill(stubPerEvent[i],8);
-      if (stubPerEvent[i] == 9)
-        h1->Fill(stubPerEvent[i],9);
+      for (int j = 1; j < 10; j++) {
+	if (stubPerEvent[i] == j)                                                                       
+	  h1->Fill(stubPerEvent[i],j);
+	std::cout << j;
+      } 
       i++;
     }
 

@@ -169,7 +169,6 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       for (int j = 1; j < 10; j++) {
 	if (stubPerEvent[i] == j)                                                                       
 	  h1->Fill(stubPerEvent[i],j);
-	std::cout << j;
       } 
       i++;
     }

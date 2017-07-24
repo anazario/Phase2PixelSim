@@ -117,9 +117,7 @@ Phase2PixelStubs::Phase2PixelStubs(const edm::ParameterSet& iConfig)
 
 {
   stubSrc_ = iConfig.getParameter<edm::InputTag>("TTStubs");
-
   StubTok_ = consumes<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >(stubSrc_);
-
 }
 
 
@@ -149,6 +147,12 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > Phase2TrackerDigiTTStubHandle;
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
   edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
+
+  // Geometry
+  edm::ESHandle< TrackerGeometry > tGeometryHandle;
+  const TrackerGeometry* theTrackerGeometry;
+  iSetup.get< TrackerDigiGeometryRecord >().get( tGeometryHandle );
+  theTrackerGeometry = tGeometryHandle.product();
  
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
@@ -168,6 +172,22 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       temp = 0;
       for ( contentIter = inputIter->begin(); contentIter != inputIter->end(); ++contentIter )
 	{
+	  /// Make reference stub
+	  edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
+
+	  /// Get det ID (place of the stub)
+	  //  tempStubRef->getDetId() gives the stackDetId, not rawId
+	  DetId detIdStub = theTrackerGeometry->idToDet( (tempStubRef->getClusterRef(0))->getDetId() )->geographicalId();
+
+	  /// Define position stub by position inner cluster
+	  MeasurementPoint mp = (tempStubRef->getClusterRef(0))->findAverageLocalCoordinates();
+	  const GeomDet* theGeomDet = theTrackerGeometry->idToDet(detIdStub);
+	  Global3DPoint posStub = theGeomDet->surface().toGlobal( theGeomDet->topology().localPosition(mp) );
+	 
+	  double eta = posStub.eta();
+
+	  stub_eta->push_back(eta);
+
 	  temp++;
 	}
       stubPerEvent.push_back(temp);

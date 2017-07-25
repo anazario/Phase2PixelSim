@@ -149,11 +149,11 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
 
   // Geometry
-  edm::ESHandle< TrackerGeometry > tGeometryHandle;
+  /*  edm::ESHandle< TrackerGeometry > tGeometryHandle;
   const TrackerGeometry* theTrackerGeometry;
   iSetup.get< TrackerDigiGeometryRecord >().get( tGeometryHandle );
   theTrackerGeometry = tGeometryHandle.product();
- 
+  */
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
   typename edmNew::DetSet< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator contentIter;
@@ -161,8 +161,9 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if ( !Phase2TrackerDigiTTStubHandle.isValid() )  return;
 
   TH1* h1 = new TH1I("h1", "Number of Stubs", 11, 0.0, 11.0);
+  TH1* h2 = new TH1I("h2", "Number of Stubs", 3, 0.0, 3.0);
 
-  int temp;//, counter = 0;
+  int temp, temp1 = 0;//, counter = 0;
   std::vector<int> stubPerEvent, Nstubs;
 
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
@@ -174,7 +175,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	{
 	  /// Make reference stub
 	  edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
-
+	  /*
 	  /// Get det ID (place of the stub)
 	  //  tempStubRef->getDetId() gives the stackDetId, not rawId
 	  DetId detIdStub = theTrackerGeometry->idToDet( (tempStubRef->getClusterRef(0))->getDetId() )->geographicalId();
@@ -187,20 +188,22 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  double eta = posStub.eta();
 
 	  stub_eta->push_back(eta);
-
+	  */
 	  temp++;
+	  temp1 = 0;
+	  temp1++;
+	  Nstubs.push_back(temp1);
 	}
       stubPerEvent.push_back(temp);
     }
   int vecSize = stubPerEvent.size();
-  //std::cout << vecSize << std::endl;
-  
+  int vecSize2 = Nstubs.size();
+    
   int i = 0;
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
         ++inputIter )
     {
-      //std::cout << stubPerEvent[i];
       for (int j = 1; j < 10; j++) {
 	if (stubPerEvent[i] == j)                                                                       
 	  h1->Fill(stubPerEvent[i],j);
@@ -209,13 +212,15 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       nstub->push_back(vecSize);
     }
 
-  Nstubs.push_back(vecSize);
-
-  std::string intstr = std::to_string(vecSize);
+  for (int k = 0; k <= vecSize2; k++)
+    h2->Fill(Nstubs[k],1);
+  
+  //std::string intstr = std::to_string(vecSize);
+  std::string intstr = std::to_string(vecSize2);
   TString name = intstr + "NStubs.pdf";
   TCanvas* hcanvas = new TCanvas("hcanvas","Canvas 1",100,100,800,800);
-  h1->Draw("HIST");
-  gPad->SetLogy();
+  h2->Draw("HIST");
+  //gPad->SetLogy();
   hcanvas->SaveAs("../plugins/plots/"+name);
   delete hcanvas;
 

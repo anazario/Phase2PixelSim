@@ -190,15 +190,17 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  stub_eta->push_back(eta);
 	  */
 	  temp++;
+
 	  temp1 = 0;
 	  temp1++;
-	  Nstubs.push_back(temp1);
+	  Nstubs.push_back(temp1); //Actual number of stubs per event
 	}
-      stubPerEvent.push_back(temp);
+      stubPerEvent.push_back(temp); //more research needed
     }
   int vecSize = stubPerEvent.size();
   int vecSize2 = Nstubs.size();
-    
+  
+  //For loops for local histogram creation (not on TTree)
   int i = 0;
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
@@ -209,12 +211,13 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  h1->Fill(stubPerEvent[i],j);
       } 
       i++;
-      nstub->push_back(vecSize);
+      //nstub->push_back(vecSize);
     }
 
   for (int k = 0; k <= vecSize2; k++)
     h2->Fill(Nstubs[k],1);
   
+  nstub->push_back(vecSize2); //fill stub per event in TTree
   //std::string intstr = std::to_string(vecSize);
   std::string intstr = std::to_string(vecSize2);
   TString name = intstr + "NStubs.pdf";

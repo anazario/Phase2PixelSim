@@ -24,42 +24,39 @@
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
-
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
-
-#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "DataFormats/Common/interface/View.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
+#include "DataFormats/L1TrackTrigger/interface/TTStub.h"
+#include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Common/interface/View.h"
+
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/CommonDetUnit/interface/GeomDet.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
+#include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
+
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
 
 //root
 #include "TLorentzVector.h"
 #include "TH1D.h"
 #include "TCanvas.h"
 #include <TTree.h>
-
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
-#include "DataFormats/L1TrackTrigger/interface/TTStub.h"
-#include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
-#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/CommonDetUnit/interface/GeomDet.h"
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
-#include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
 
 //
 // class declaration
@@ -86,8 +83,6 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
-  TH1F * h_stub;
-
   // ----------member data ---------------------------
   edm::InputTag stubSrc_;
   edm::EDGetTokenT<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >  StubTok_;
@@ -99,7 +94,7 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   std::vector<float>* stub_eta;       // eta
   std::vector<float>* stub_phi;       // phi
 
-  std::vector<int>*   nstub; //number of stubs
+  std::vector<int>*   nstub; //number of stubs per event
 };
 
 //
@@ -149,11 +144,12 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
 
   // Geometry
-  /*  edm::ESHandle< TrackerGeometry > tGeometryHandle;
-  const TrackerGeometry* theTrackerGeometry;
-  iSetup.get< TrackerDigiGeometryRecord >().get( tGeometryHandle );
-  theTrackerGeometry = tGeometryHandle.product();
-  */
+  edm::ESHandle< TrackerGeometry > tGeomHandle;
+  //const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
+  iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
+  const TrackerGeometry* const theTrackerGeometry = tGeometryHandle.product();
+  //theTrackerGeometry = tGeometryHandle.product();
+  
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
   typename edmNew::DetSet< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator contentIter;
@@ -175,11 +171,11 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	{
 	  /// Make reference stub
 	  edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
-	  /*
+	  
 	  /// Get det ID (place of the stub)
 	  //  tempStubRef->getDetId() gives the stackDetId, not rawId
 	  DetId detIdStub = theTrackerGeometry->idToDet( (tempStubRef->getClusterRef(0))->getDetId() )->geographicalId();
-
+	  
 	  /// Define position stub by position inner cluster
 	  MeasurementPoint mp = (tempStubRef->getClusterRef(0))->findAverageLocalCoordinates();
 	  const GeomDet* theGeomDet = theTrackerGeometry->idToDet(detIdStub);
@@ -188,7 +184,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  double eta = posStub.eta();
 
 	  stub_eta->push_back(eta);
-	  */
+	  
 	  temp++;
 
 	  temp1 = 0;
@@ -197,7 +193,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	}
       stubPerEvent.push_back(temp); //more research needed
     }
-  int vecSize = stubPerEvent.size();
+  //int vecSize = stubPerEvent.size();
   int vecSize2 = Nstubs.size();
   
   //For loops for local histogram creation (not on TTree)

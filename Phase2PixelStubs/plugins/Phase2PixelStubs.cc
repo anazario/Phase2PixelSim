@@ -147,7 +147,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::ESHandle< TrackerGeometry > tGeomHandle;
   //const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
-  const TrackerGeometry* const theTrackerGeometry = tGeometryHandle.product();
+  const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
   //theTrackerGeometry = tGeometryHandle.product();
   
   /// Loop over input Stubs
@@ -168,29 +168,29 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     {  
       temp = 0;
       for ( contentIter = inputIter->begin(); contentIter != inputIter->end(); ++contentIter )
-	{
-	  /// Make reference stub
-	  edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
+      {
+        /// Make reference stub
+	edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
+	    
+	/// Get det ID (place of the stub)
+	//  tempStubRef->getDetId() gives the stackDetId, not rawId
+	DetId detIdStub = theTrackerGeometry->idToDet( (tempStubRef->getClusterRef(0))->getDetId() )->geographicalId();
+	
+	/// Define position stub by position inner cluster
+	MeasurementPoint mp = (tempStubRef->getClusterRef(0))->findAverageLocalCoordinates();
+	const GeomDet* theGeomDet = theTrackerGeometry->idToDet(detIdStub);
+	Global3DPoint posStub = theGeomDet->surface().toGlobal( theGeomDet->topology().localPosition(mp) );
 	  
-	  /// Get det ID (place of the stub)
-	  //  tempStubRef->getDetId() gives the stackDetId, not rawId
-	  DetId detIdStub = theTrackerGeometry->idToDet( (tempStubRef->getClusterRef(0))->getDetId() )->geographicalId();
-	  
-	  /// Define position stub by position inner cluster
-	  MeasurementPoint mp = (tempStubRef->getClusterRef(0))->findAverageLocalCoordinates();
-	  const GeomDet* theGeomDet = theTrackerGeometry->idToDet(detIdStub);
-	  Global3DPoint posStub = theGeomDet->surface().toGlobal( theGeomDet->topology().localPosition(mp) );
-	 
-	  double eta = posStub.eta();
+	double eta = posStub.eta();
+		  
+	stub_eta->push_back(eta);
+				   
+	temp++;
 
-	  stub_eta->push_back(eta);
-	  
-	  temp++;
-
-	  temp1 = 0;
-	  temp1++;
-	  Nstubs.push_back(temp1); //Actual number of stubs per event
-	}
+	temp1 = 0;
+	temp1++;
+	Nstubs.push_back(temp1); //Actual number of stubs per event
+      }
       stubPerEvent.push_back(temp); //more research needed
     }
   //int vecSize = stubPerEvent.size();
@@ -203,8 +203,8 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         ++inputIter )
     {
       for (int j = 1; j < 10; j++) {
-	if (stubPerEvent[i] == j)                                                                       
-	  h1->Fill(stubPerEvent[i],j);
+      if (stubPerEvent[i] == j)                                                                       
+        h1->Fill(stubPerEvent[i],j);
       } 
       i++;
       //nstub->push_back(vecSize);

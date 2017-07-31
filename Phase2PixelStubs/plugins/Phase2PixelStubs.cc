@@ -22,6 +22,8 @@
 #include <iostream>
 
 // user include files
+#include "CondFormats/HcalObjects/interface/HcalPedestals.h"
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -29,12 +31,12 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/EDFilter.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/typelookup.h"
 
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
@@ -145,10 +147,8 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   // Geometry
   edm::ESHandle< TrackerGeometry > tGeomHandle;
-  //const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
   const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
-  //theTrackerGeometry = tGeometryHandle.product();
   
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;

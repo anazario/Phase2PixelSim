@@ -17,6 +17,7 @@ process.load("Phase2PixelSim.Phase2PixelStubs.Phase2PixelStubs_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
+#get root files from list
 mylist = FileUtils.loadListFromFile('rootfiles.txt')
 mylist.extend ( FileUtils.loadListFromFile('rootfiles.txt'))
 readFiles = cms.untracked.vstring( *mylist) 

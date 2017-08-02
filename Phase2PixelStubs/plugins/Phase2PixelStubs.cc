@@ -39,11 +39,11 @@
 #include "FWCore/Utilities/interface/typelookup.h"
 
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
-#include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
-#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
@@ -171,7 +171,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       {
         /// Make reference stub
 	edm::Ref< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >, TTStub< Ref_Phase2TrackerDigi_ > > tempStubRef = edmNew::makeRefTo( Phase2TrackerDigiTTStubHandle, contentIter );
-	    
+
 	/// Get det ID (place of the stub)
 	//  tempStubRef->getDetId() gives the stackDetId, not rawId
 	DetId detIdStub = theTrackerGeometry->idToDet( (tempStubRef->getClusterRef(0))->getDetId() )->geographicalId();
@@ -184,7 +184,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	double eta = posStub.eta();
 		  
 	stub_eta->push_back(eta);
-				   
+
 	temp++;
 
 	temp1 = 0;

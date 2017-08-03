@@ -40,10 +40,13 @@
 
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
+#include "DataFormats/L1TrackTrigger/interface/TTTrack.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
+#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
 
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
@@ -89,6 +92,12 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   edm::InputTag stubSrc_;
   edm::EDGetTokenT<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >  StubTok_;
 
+  edm::InputTag TrackingParticleSrc_;
+  edm::EDGetTokenT< std::vector< TrackingParticle > > TrackingParticleTok_;
+
+  edm::InputTag TrackingVertexSrc_;
+  edm::EDGetTokenT< std::vector< TrackingVertex > > TrackingVertexTok_;
+
   // ----------Tree and branches for mini-tuple ---------------------------
   TTree* eventTree;
 
@@ -107,16 +116,20 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
 // static data member definitions
 //
 
-//
+//-------------------------------------------------------------------------------------------------
 // constructors and destructor
-//
+//------------------------------------------------------------------------------------------------- 
 Phase2PixelStubs::Phase2PixelStubs(const edm::ParameterSet& iConfig)
-
 {
   stubSrc_ = iConfig.getParameter<edm::InputTag>("TTStubs");
   StubTok_ = consumes<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >(stubSrc_);
-}
 
+  TrackingParticleSrc_ = iConfig.getParameter<edm::InputTag>("TrackingParticleInputTag");
+  TrackingParticleTok_ = consumes< std::vector< TrackingParticle > >(TrackingParticleSrc_);
+
+  TrackingVertexSrc_ = iConfig.getParameter<edm::InputTag>("TrackingVertexInputTag");
+  TrackingVertexTok_ = consumes< std::vector< TrackingVertex > >(TrackingVertexSrc_);
+}
 
 Phase2PixelStubs::~Phase2PixelStubs()
 {
@@ -145,6 +158,12 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
   edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
 
+  // tracking particles
+  edm::Handle< std::vector< TrackingParticle > > TrackingParticleHandle;
+  edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
+  iEvent.getByToken(TrackingParticleTok_, TrackingParticleHandle);
+  iEvent.getByToken(TrackingVertexTok_, TrackingVertexHandle);
+
   // Geometry
   edm::ESHandle< TrackerGeometry > tGeomHandle;
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
@@ -161,6 +180,10 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   int temp, temp1 = 0;//, counter = 0;
   std::vector<int> stubPerEvent, Nstubs;
+
+  // ----------------------------------------------------------------------------------------------
+  // loop over L1 stubs
+  // ----------------------------------------------------------------------------------------------
 
   for ( inputIter = Phase2TrackerDigiTTStubHandle->begin();
         inputIter != Phase2TrackerDigiTTStubHandle->end();
@@ -182,7 +205,9 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	Global3DPoint posStub = theGeomDet->surface().toGlobal( theGeomDet->topology().localPosition(mp) );
 	  
 	double eta = posStub.eta();
-		  
+	double phi = posStub.phi();
+
+	stub_phi->push_back(phi);		  
 	stub_eta->push_back(eta);
 
 	temp++;
@@ -193,6 +218,25 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
       stubPerEvent.push_back(temp); //more research needed
     }
+
+  // ----------------------------------------------------------------------------------------------
+  // loop over tracking particles
+  // ----------------------------------------------------------------------------------------------
+
+  int this_tp = 0;
+  std::vector< TrackingParticle >::const_iterator iterTP;
+
+  for (iterTP = TrackingParticleHandle->begin(); iterTP != TrackingParticleHandle->end(); ++iterTP) {
+ 
+    edm::Ptr< TrackingParticle > tp_ptr(TrackingParticleHandle, this_tp);
+    this_tp++;
+
+    float track_pt = iterTP->pt();
+    //if (track_pt < 2.0) continue;
+
+    stub_pt->push_back(track_pt);
+  }
+
   //int vecSize = stubPerEvent.size();
   int vecSize2 = Nstubs.size();
   

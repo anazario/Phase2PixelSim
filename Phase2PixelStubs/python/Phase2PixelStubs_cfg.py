@@ -25,7 +25,9 @@ readFiles = cms.untracked.vstring( *mylist)
 process.source = cms.Source("PoolSource", fileNames = readFiles)
 
 Phase2PixelStubs = cms.EDAnalyzer("Phase2PixelStubs",
-    src = cms.InputTag("TTStubsFromPhase2TrackerDigis", "StubAccepted")
+    src = cms.InputTag("TTStubsFromPhase2TrackerDigis", "StubAccepted"),
+    TrackingParticleInputTag = cms.InputTag("mix", "MergedTrackTruth"),
+    TrackingVertexInputTag = cms.InputTag("mix", "MergedTrackTruth"),
 )
 
 process.p = cms.Path(process.Phase2PixelStubs)

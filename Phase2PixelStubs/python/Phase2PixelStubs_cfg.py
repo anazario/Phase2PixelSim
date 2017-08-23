@@ -14,6 +14,7 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("Phase2PixelSim.Phase2PixelStubs.Phase2PixelStubs_cfi")
+process.load("Phase2PixelSim.Phase2PixelStubs.OT613_200_IT4025_opt8s3l_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -31,3 +32,4 @@ Phase2PixelStubs = cms.EDAnalyzer("Phase2PixelStubs",
 )
 
 process.p = cms.Path(process.Phase2PixelStubs)
+

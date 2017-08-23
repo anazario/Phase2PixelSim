@@ -53,9 +53,13 @@
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
+//#include "Geometry/TrackerGeometryBuilder/interface/StackedTrackerGeometry.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
+
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
 //root
 #include "TLorentzVector.h"
@@ -104,6 +108,7 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   std::vector<float>* stub_pt;        // pt
   std::vector<float>* stub_eta;       // eta
   std::vector<float>* stub_phi;       // phi
+  std::vector<float>* trig_bend;
 
   std::vector<int>*   nstub; //number of stubs per event
 };
@@ -152,6 +157,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   stub_pt->clear();
   stub_eta->clear();
   stub_phi->clear();
+  trig_bend->clear();
   nstub->clear();
 
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > Phase2TrackerDigiTTStubHandle;
@@ -165,10 +171,23 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   iEvent.getByToken(TrackingVertexTok_, TrackingVertexHandle);
 
   // Geometry
+  /*edm::ESHandle< StackedTrackerGeometry >         StackedGeometryHandle;
+  const StackedTrackerGeometry*                   theStackedGeometry = 0;
+  iSetup.get< StackedTrackerGeometryRecord >().get(StackedGeometryHandle);
+  theStackedGeometry = StackedGeometryHandle.product();
+  */
+
   edm::ESHandle< TrackerGeometry > tGeomHandle;
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
   const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
-  
+
+  // magnetic field
+  /*
+  edm::ESHandle< MagneticField > magneticFieldHandle;
+  iSetup.get< IdealMagneticFieldRecord >().get(magneticFieldHandle);
+  double mMagneticFieldStrength = 0;
+  */
+
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
   typename edmNew::DetSet< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator contentIter;
@@ -206,9 +225,13 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  
 	double eta = posStub.eta();
 	double phi = posStub.phi();
+	//double pt = theTrackerGeometry->findRoughPt(mMagneticFieldStrength,stub);
+
+	float trigBend = tempStubRef->getTriggerBend();
 
 	stub_phi->push_back(phi);		  
 	stub_eta->push_back(eta);
+	trig_bend->push_back(trigBend);
 
 	temp++;
 
@@ -222,7 +245,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   // ----------------------------------------------------------------------------------------------
   // loop over tracking particles
   // ----------------------------------------------------------------------------------------------
-
+  /*
   int this_tp = 0;
   std::vector< TrackingParticle >::const_iterator iterTP;
 
@@ -236,6 +259,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     stub_pt->push_back(track_pt);
   }
+  */
 
   //int vecSize = stubPerEvent.size();
   int vecSize2 = Nstubs.size();
@@ -281,6 +305,7 @@ Phase2PixelStubs::beginJob()
   stub_pt = new std::vector<float>;
   stub_eta = new std::vector<float>;    
   stub_phi = new std::vector<float>;    
+  trig_bend = new std::vector<float>;
 
   nstub = new std::vector<int>;
 
@@ -290,6 +315,7 @@ Phase2PixelStubs::beginJob()
   eventTree->Branch("stub_pt",     &stub_pt);
   eventTree->Branch("stub_eta",    &stub_eta);
   eventTree->Branch("stub_phi",    &stub_phi);
+  eventTree->Branch("trig_bend",   &trig_bend);
   eventTree->Branch("nstub",     &nstub);
 }
 

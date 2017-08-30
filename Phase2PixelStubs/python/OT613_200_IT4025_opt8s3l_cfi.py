@@ -28,3 +28,4 @@ for i in range (0, len (process.XMLIdealGeometryESSource.geomXMLFiles)):
     fileName = xmlFile.split("/")[-1]
     if fileName in fileNames:
         process.XMLIdealGeometryESSource.geomXMLFiles[i] = inputDir + fileName
+

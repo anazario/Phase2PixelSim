@@ -7,3 +7,4 @@ Phase2PixelStubs = cms.EDAnalyzer('Phase2PixelStubs',
   TrackingVertexInputTag = cms.InputTag("mix", "MergedTrackTruth"),
 )
 
+

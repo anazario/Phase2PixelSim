@@ -19,8 +19,8 @@ process.load("Phase2PixelSim.Phase2PixelStubs.OT613_200_IT4025_opt8s3l_cfi")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #get root files from list
-mylist = FileUtils.loadListFromFile('rootfiles.txt')
-mylist.extend ( FileUtils.loadListFromFile('rootfiles.txt'))
+mylist = FileUtils.loadListFromFile('GeomRootFiles/OT613_200_IT4025_opt8s3l.txt')
+mylist.extend ( FileUtils.loadListFromFile('GeomRootFiles/OT613_200_IT4025_opt8s3l.txt'))
 readFiles = cms.untracked.vstring( *mylist) 
 
 process.source = cms.Source("PoolSource", fileNames = readFiles)

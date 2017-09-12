@@ -998,4 +998,3 @@ root://cmseos.fnal.gov//eos/uscms/store/user/lpcfpix/TTbar_14TeV_923_OT613_200_I
 root://cmseos.fnal.gov//eos/uscms/store/user/lpcfpix/TTbar_14TeV_923_OT613_200_IT4025_opt8s3l/step3_PU200//170626_081843/0000/step3_998.root
 root://cmseos.fnal.gov//eos/uscms/store/user/lpcfpix/TTbar_14TeV_923_OT613_200_IT4025_opt8s3l/step3_PU200//170626_081843/0000/step3_999.root
 root://cmseos.fnal.gov//eos/uscms/store/user/lpcfpix/TTbar_14TeV_923_OT613_200_IT4025_opt8s3l/step3_PU200//170626_081843/0001/step3_1000.root
-

@@ -9,24 +9,15 @@ echo "CMSSW on Condor"
 PATH="/usr/libexec/condor:$PATH"
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
-tar -xzvf CMSSW_9_2_3.tgz
-rm CMSSW_9_2_3.tgz
-cd CMSSW_9_2_3/src/
+tar -xzf ${4}.tar.gz
+rm ${4}.tar.gz
+cd ${4}/src
 scram b ProjectRename
 eval `scramv1 runtime -sh`
 
 cd Phase2PixelSim/Phase2PixelStubs/python/
 
 echo "cmsRun Phase2PixelStubs_cfg.py"
-cmsRun Phase2PixelStubs_cfg.py -s $1 -e $2
+cmsRun Phase2PixelStubs_cfg.py  startFile=$1 endFile=$2 geometry=$3
 
-pwd
-ls -altrh
-
-cd ${_CONDOR_SCRATCH_DIR}
-
-pwd
-ls -altrh
-
-cp $CMSSW_BASE/src/Phase2PixelSim/Phase2PixelStubs/python/*.root .
-
+mv *.root ${_CONDOR_SCRATCH_DIR}

@@ -18,6 +18,6 @@ eval `scramv1 runtime -sh`
 cd Phase2PixelSim/Phase2PixelStubs/python/
 
 echo "cmsRun Phase2PixelStubs_cfg.py"
-cmsRun Phase2PixelStubs_cfg.py  startFile=$1 endFile=$2 geometry=$3
+cmsRun Phase2PixelStubs_cfg.py  start=$1 finish=$2 geometry=$3
 
 mv *.root ${_CONDOR_SCRATCH_DIR}

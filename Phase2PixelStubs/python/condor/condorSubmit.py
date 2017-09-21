@@ -26,16 +26,15 @@ x509userproxy = $ENV(X509_USER_PROXY)
 
 '''
 
+prodName = "Phase2PixelStubs"
+filesPerJob = options.numfile
+outFileList = [submitFile]
 filePath = dict[options.geometry]
 file = open(filePath)
 counter = 0
 
 for line in file:
     counter += 1
-
-prodName = "Phase2PixelStubs"
-filesPerJob = options.numfile
-outFileList = [submitFile]
 
 for startFileNum in xrange(0, counter, filesPerJob):
     endFileNumber = startFileNum+filesPerJob

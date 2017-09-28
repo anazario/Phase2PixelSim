@@ -52,10 +52,10 @@
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
-//#include "Geometry/TrackerGeometryBuilder/interface/StackedTrackerGeometry.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
+#include "SimTracker/TrackTriggerAssociation/interface/TTTrackAssociationMap.h"
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
@@ -85,11 +85,12 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-
    private:
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
+
+  int L1Tk_nPar;   
 
   // ----------member data ---------------------------
   edm::InputTag stubSrc_;
@@ -101,15 +102,33 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   edm::InputTag TrackingVertexSrc_;
   edm::EDGetTokenT< std::vector< TrackingVertex > > TrackingVertexTok_;
 
+  edm::InputTag L1TrackSrc_;        // L1 track collection
+  edm::EDGetTokenT< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TrackTok_;
+
+  edm::InputTag MCTruthTrackSrc_;   // MC truth collection
+  edm::EDGetTokenT< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > TrackMCTruthTok_;
+
   // ----------Tree and branches for mini-tuple ---------------------------
   TTree* eventTree;
 
-  std::vector<float>* stub_pt;        // pt
+  //stub variables
   std::vector<float>* stub_eta;       // eta
   std::vector<float>* stub_phi;       // phi
   std::vector<float>* trig_bend;
-
   std::vector<int>*   nstub; //number of stubs per event
+
+  //track variables
+  std::vector<float>* track_pt;
+  std::vector<float>* track_eta;
+  std::vector<float>* track_phi;
+  std::vector<float>* track_z0;
+  std::vector<int>* track_fake;
+  std::vector<int>* track_match_pdgid;
+  std::vector<float>* track_match_pt;
+  std::vector<float>* track_match_eta;
+  std::vector<float>* track_match_phi;
+  std::vector<float>* track_match_z0;
+  std::vector<float>* track_match_dxy;
 };
 
 //
@@ -133,6 +152,13 @@ Phase2PixelStubs::Phase2PixelStubs(const edm::ParameterSet& iConfig)
 
   TrackingVertexSrc_ = iConfig.getParameter<edm::InputTag>("TrackingVertexInputTag");
   TrackingVertexTok_ = consumes< std::vector< TrackingVertex > >(TrackingVertexSrc_);
+
+  L1TrackSrc_      = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
+  TrackTok_ = consumes< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > >(L1TrackSrc_);
+
+  MCTruthTrackSrc_ = iConfig.getParameter<edm::InputTag>("MCTruthTrackInputTag");
+  TrackMCTruthTok_ = consumes< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthTrackSrc_);
+
 }
 
 Phase2PixelStubs::~Phase2PixelStubs()
@@ -143,7 +169,6 @@ Phase2PixelStubs::~Phase2PixelStubs()
 
 }
 
-
 //
 // member functions
 //
@@ -153,39 +178,40 @@ void
 Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  stub_pt->clear();
   stub_eta->clear();
   stub_phi->clear();
   trig_bend->clear();
   nstub->clear();
 
+  track_pt->clear();
+  track_eta->clear();
+  track_phi->clear();
+  track_z0->clear();
+  track_fake->clear();
+  track_match_pdgid->clear();
+  track_match_pt->clear();
+  track_match_eta->clear();
+  track_match_phi->clear();
+  track_match_z0->clear();
+  track_match_dxy->clear();
+
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > Phase2TrackerDigiTTStubHandle;
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
-  edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
+  //edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
+  edm::Handle< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTTrackHandle;
+  iEvent.getByToken(TrackMCTruthTok_, MCTruthTTTrackHandle);
+  edm::Handle< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTTrackHandle;
+  iEvent.getByToken(TrackTok_, TTTrackHandle);
 
   // tracking particles
   edm::Handle< std::vector< TrackingParticle > > TrackingParticleHandle;
-  edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
   iEvent.getByToken(TrackingParticleTok_, TrackingParticleHandle);
+  edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
   iEvent.getByToken(TrackingVertexTok_, TrackingVertexHandle);
-
-  // Geometry
-  /*edm::ESHandle< StackedTrackerGeometry >         StackedGeometryHandle;
-  const StackedTrackerGeometry*                   theStackedGeometry = 0;
-  iSetup.get< StackedTrackerGeometryRecord >().get(StackedGeometryHandle);
-  theStackedGeometry = StackedGeometryHandle.product();
-  */
 
   edm::ESHandle< TrackerGeometry > tGeomHandle;
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
   const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
-
-  // magnetic field
-  /*
-  edm::ESHandle< MagneticField > magneticFieldHandle;
-  iSetup.get< IdealMagneticFieldRecord >().get(magneticFieldHandle);
-  double mMagneticFieldStrength = 0;
-  */
 
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
@@ -244,21 +270,64 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   // ----------------------------------------------------------------------------------------------
   // loop over tracking particles
   // ----------------------------------------------------------------------------------------------
-  /*
-  int this_tp = 0;
-  std::vector< TrackingParticle >::const_iterator iterTP;
+  int this_l1track = 0;
+  std::vector< TTTrack< Ref_Phase2TrackerDigi_ > >::const_iterator iterL1Track;
+  for ( iterL1Track = TTTrackHandle->begin(); iterL1Track != TTTrackHandle->end(); iterL1Track++ ) {
+      
+    edm::Ptr< TTTrack< Ref_Phase2TrackerDigi_ > > l1track_ptr(TTTrackHandle, this_l1track);
+    this_l1track++;
+      
+    float tmp_trk_pt   = iterL1Track->getMomentum(L1Tk_nPar).perp();
+    float tmp_trk_eta  = iterL1Track->getMomentum(L1Tk_nPar).eta();
+    float tmp_trk_phi  = iterL1Track->getMomentum(L1Tk_nPar).phi();
+    float tmp_trk_z0   = iterL1Track->getPOCA(L1Tk_nPar).z(); //cm
 
-  for (iterTP = TrackingParticleHandle->begin(); iterTP != TrackingParticleHandle->end(); ++iterTP) {
- 
-    edm::Ptr< TrackingParticle > tp_ptr(TrackingParticleHandle, this_tp);
-    this_tp++;
+    track_pt ->push_back(tmp_trk_pt);
+    track_eta->push_back(tmp_trk_eta);
+    track_phi->push_back(tmp_trk_phi);
+    track_z0 ->push_back(tmp_trk_z0);
 
-    float track_pt = iterTP->pt();
-    //if (track_pt < 2.0) continue;
+    // ----------------------------------------------------------------------------------------------
+    // for studying the fake rate
+    // ----------------------------------------------------------------------------------------------
 
-    stub_pt->push_back(track_pt);
+    edm::Ptr< TrackingParticle > my_tp = MCTruthTTTrackHandle->findTrackingParticlePtr(l1track_ptr);
+
+    int myFake = 0;
+
+    int myTP_pdgid = -999;
+    float myTP_pt = -999;
+    float myTP_eta = -999;
+    float myTP_phi = -999;
+    float myTP_z0 = -999;
+    float myTP_dxy = -999;
+
+    if (my_tp.isNull()) myFake = 0;
+    else {
+      int tmp_eventid = my_tp->eventId().event();
+
+      if (tmp_eventid > 0) myFake = 2;
+      else myFake = 1;
+
+      myTP_pdgid = my_tp->pdgId();
+      myTP_pt = my_tp->p4().pt();
+      myTP_eta = my_tp->p4().eta();
+      myTP_phi = my_tp->p4().phi();
+      myTP_z0 = my_tp->vertex().z();
+      
+      float myTP_x0 = my_tp->vertex().x();
+      float myTP_y0 = my_tp->vertex().y();
+      myTP_dxy = sqrt(myTP_x0*myTP_x0 + myTP_y0*myTP_y0);
+    }
+
+    track_fake->push_back(myFake);
+    track_match_pdgid->push_back(myTP_pdgid);
+    track_match_pt->push_back(myTP_pt);
+    track_match_eta->push_back(myTP_eta);
+    track_match_phi->push_back(myTP_phi);
+    track_match_z0->push_back(myTP_z0);
+    track_match_dxy->push_back(myTP_dxy);
   }
-  */
 
   //int vecSize = stubPerEvent.size();
   int vecSize2 = Nstubs.size();
@@ -274,7 +343,6 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         h1->Fill(stubPerEvent[i],j);
       } 
       i++;
-      //nstub->push_back(vecSize);
     }
 
   for (int k = 0; k <= vecSize2; k++)
@@ -293,29 +361,48 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   eventTree->Fill();
 }
 
-
-
 // ------------ method called once each job just before starting event loop  ------------
 void 
 Phase2PixelStubs::beginJob()
 {
   edm::Service<TFileService> fs;
 
-  stub_pt = new std::vector<float>;
+  //stub objects
+  nstub = new std::vector<int>;
   stub_eta = new std::vector<float>;    
   stub_phi = new std::vector<float>;    
   trig_bend = new std::vector<float>;
 
-  nstub = new std::vector<int>;
+  //track objects
+  track_fake = new std::vector<int>;
+  track_match_pdgid = new std::vector<int>;
+  track_pt = new std::vector<float>;
+  track_eta = new std::vector<float>;
+  track_phi = new std::vector<float>;
+  track_z0 = new std::vector<float>;
+  track_match_pt = new std::vector<float>;
+  track_match_eta = new std::vector<float>;
+  track_match_phi = new std::vector<float>;
+  track_match_z0 = new std::vector<float>;
+  track_match_dxy = new std::vector<float>;
 
   // ntuple
   eventTree = fs->make<TTree>("eventTree", "Event tree");
-
-  eventTree->Branch("stub_pt",     &stub_pt);
   eventTree->Branch("stub_eta",    &stub_eta);
   eventTree->Branch("stub_phi",    &stub_phi);
   eventTree->Branch("trig_bend",   &trig_bend);
   eventTree->Branch("nstub",     &nstub);
+  eventTree->Branch("track_pt",    &track_pt);
+  eventTree->Branch("track_eta",    &track_eta);
+  eventTree->Branch("track_phi",    &track_phi);
+  eventTree->Branch("track_z0",    &track_z0);
+  eventTree->Branch("track_match_pt",    &track_match_pt);
+  eventTree->Branch("track_match_eta",    &track_match_eta);
+  eventTree->Branch("track_match_phi",    &track_match_phi);
+  eventTree->Branch("track_match_z0",    &track_match_z0);
+  eventTree->Branch("track_match_dxy",    &track_match_dxy);
+  eventTree->Branch("track_match_pdgid",    &track_match_pdgid);
+  eventTree->Branch("track_fake",    &track_fake);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

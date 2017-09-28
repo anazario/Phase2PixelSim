@@ -54,8 +54,10 @@ process.source = cms.Source("PoolSource", fileNames = readFiles)
 
 Phase2PixelStubs = cms.EDAnalyzer("Phase2PixelStubs",
     src = cms.InputTag("TTStubsFromPhase2TrackerDigis", "StubAccepted"),
-    TrackingParticleInputTag = cms.InputTag("mix", "MergedTrackTruth"),
     TrackingVertexInputTag = cms.InputTag("mix", "MergedTrackTruth"),
+    #L1TrackInputTag = cms.InputTag("TTTracksFromTracklet", "Level1TTTracks"),
+    MCTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "Level1TTTracks"), ## MCTruth input 
+    TrackingParticleInputTag = cms.InputTag("mix", "MergedTrackTruth"),
 )
 
 process.p = cms.Path(process.Phase2PixelStubs)

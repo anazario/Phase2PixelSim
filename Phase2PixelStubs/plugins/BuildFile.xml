@@ -16,4 +16,8 @@
 <use name="SimDataFormats/TrackingAnalysis"/>
 <use name="SimDataFormats/TrackingHit"/>
 <use name="SimTracker/TrackerHitAssociation"/>
+<use name="SimTracker/TrackTriggerAssociation"/>
+<use name="DataFormats/Phase2TrackerDigi"/>
+<use name="TrackingTools/TrackAssociator"/>
+<use name="TrackingTools/TrajectoryState"/>
 <flags EDM_PLUGIN="1"/>

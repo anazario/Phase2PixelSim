@@ -13,7 +13,7 @@
 //
 // Original Author:  andres abreu nazario
 //         Created:  Thu, 06 Jul 2017 21:24:55 GMT
-//
+
 
 
 // system include files
@@ -36,6 +36,9 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/typelookup.h"
+
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
@@ -101,6 +104,9 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   edm::InputTag TrackingVertexSrc_;
   edm::EDGetTokenT< std::vector< TrackingVertex > > TrackingVertexTok_;
 
+  edm::InputTag generalTracksSrc_;
+  edm::EDGetTokenT< std::vector< reco::Track > > GeneralTracksTok_;
+
   // ----------Tree and branches for mini-tuple ---------------------------
   TTree* eventTree;
 
@@ -108,8 +114,8 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   std::vector<float>* stub_eta;       // eta
   std::vector<float>* stub_phi;       // phi
   std::vector<float>* trig_bend;
-
   std::vector<int>*   nstub; //number of stubs per event
+  std::vector<float>* gentracks_eta;
 };
 
 //
@@ -133,6 +139,9 @@ Phase2PixelStubs::Phase2PixelStubs(const edm::ParameterSet& iConfig)
 
   TrackingVertexSrc_ = iConfig.getParameter<edm::InputTag>("TrackingVertexInputTag");
   TrackingVertexTok_ = consumes< std::vector< TrackingVertex > >(TrackingVertexSrc_);
+
+  generalTracksSrc_ = iConfig.getParameter<edm::InputTag>("GeneralTracksInputTag");
+  GeneralTracksTok_ = consumes< std::vector< reco::Track > >(generalTracksSrc_);
 }
 
 Phase2PixelStubs::~Phase2PixelStubs()
@@ -163,29 +172,19 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
   edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
 
-  // tracking particles
+  //general tracks
+  edm::Handle< std::vector< reco::Track > > GeneralTracksHandle;
+  iEvent.getByToken(GeneralTracksTok_, GeneralTracksHandle);
+
+  //tracking particles 
   edm::Handle< std::vector< TrackingParticle > > TrackingParticleHandle;
   edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
   iEvent.getByToken(TrackingParticleTok_, TrackingParticleHandle);
   iEvent.getByToken(TrackingVertexTok_, TrackingVertexHandle);
 
-  // Geometry
-  /*edm::ESHandle< StackedTrackerGeometry >         StackedGeometryHandle;
-  const StackedTrackerGeometry*                   theStackedGeometry = 0;
-  iSetup.get< StackedTrackerGeometryRecord >().get(StackedGeometryHandle);
-  theStackedGeometry = StackedGeometryHandle.product();
-  */
-
   edm::ESHandle< TrackerGeometry > tGeomHandle;
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
   const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
-
-  // magnetic field
-  /*
-  edm::ESHandle< MagneticField > magneticFieldHandle;
-  iSetup.get< IdealMagneticFieldRecord >().get(magneticFieldHandle);
-  double mMagneticFieldStrength = 0;
-  */
 
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
@@ -224,7 +223,6 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	  
 	double eta = posStub.eta();
 	double phi = posStub.phi();
-	//double pt = theTrackerGeometry->findRoughPt(mMagneticFieldStrength,stub);
 
 	float trigBend = tempStubRef->getTriggerBend();
 
@@ -241,6 +239,29 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       stubPerEvent.push_back(temp); //more research needed
     }
 
+  // ----------------------------------------------------------------------------------------------                     
+  // loop over general tracks                                                                                             
+  // ----------------------------------------------------------------------------------------------  
+
+  
+  int this_gtrk = 0;
+  std::vector< reco::Track >::const_iterator iterGTrk;
+
+  for (iterGTrk = GeneralTracksHandle->begin(); iterGTrk != GeneralTracksHandle->end(); ++iterGTrk) {
+    
+    //edm::Ptr< reco::Track > gtrk_ptr(GeneralTracksHandle, this_gtrk);                                                  
+    //this_gtrk++;
+
+    float tmp_gtrk_eta = iterGTrk->outerEta();
+    gentracks_eta->push_back(tmp_gtrk_eta);
+  }
+  /*
+  for(unsigned int i = 0; i < GeneralTracksHandle->size(); ++i) {
+    
+    //float tmp_gtrk_eta = GeneralTracksHandle->at(i).Eta();                                                                                  
+    //gentracks_eta->push_back(tmp_gtrk_eta); 
+  }
+  */
   // ----------------------------------------------------------------------------------------------
   // loop over tracking particles
   // ----------------------------------------------------------------------------------------------
@@ -305,7 +326,7 @@ Phase2PixelStubs::beginJob()
   stub_eta = new std::vector<float>;    
   stub_phi = new std::vector<float>;    
   trig_bend = new std::vector<float>;
-
+  gentracks_eta = new std::vector<float>;
   nstub = new std::vector<int>;
 
   // ntuple
@@ -316,6 +337,7 @@ Phase2PixelStubs::beginJob()
   eventTree->Branch("stub_phi",    &stub_phi);
   eventTree->Branch("trig_bend",   &trig_bend);
   eventTree->Branch("nstub",     &nstub);
+  eventTree->Branch("gentracks_eta",     &gentracks_eta);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

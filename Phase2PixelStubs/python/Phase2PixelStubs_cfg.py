@@ -9,7 +9,8 @@ import optparse
 
 ## --------------------------
 ## -- Command line options --
-## --------------------------                                                                                                                                
+## --------------------------                                                                                                            
+                   
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing ('standard')
 
@@ -28,7 +29,6 @@ process = cms.Process("FPIX")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.EventContent.EventContent_cff')
-
 process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')
 
 process.TFileService = cms.Service("TFileService",
@@ -55,7 +55,9 @@ process.source = cms.Source("PoolSource", fileNames = readFiles)
 Phase2PixelStubs = cms.EDAnalyzer("Phase2PixelStubs",
     src = cms.InputTag("TTStubsFromPhase2TrackerDigis", "StubAccepted"),
     TrackingParticleInputTag = cms.InputTag("mix", "MergedTrackTruth"),
-    TrackingVertexInputTag = cms.InputTag("mix", "MergedTrackTruth"),
+    TrackingVertexInputTag = cms.InputTag("mix", "MergedTrackTruth"), 
+    GeneralTracksInputTag = cms.InputTag("generalTracks",""),
+
 )
 
 process.p = cms.Path(process.Phase2PixelStubs)

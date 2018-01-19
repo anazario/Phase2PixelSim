@@ -15,7 +15,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing ('standard')
 
 options.register('start', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Indicates on which file to start.")
-options.register('finish', 10, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Indicates on which file to stop.")
+options.register('finish', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Indicates on which file to stop.")
 options.register('geometry', 'opt8s4l', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "Indicate geometry to run on.")
 
 options.parseArguments()

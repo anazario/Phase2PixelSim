@@ -56,12 +56,14 @@
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
 //#include "Geometry/TrackerGeometryBuilder/interface/StackedTrackerGeometry.h"
+#include "DQMServices/Core/interface/MonitorElement.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
-
+//#include "Geometry/TrackerGeometryBuilder/interface/StackedTrackerDetUnit.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "DQM/Phase2OuterTracker/interface/OuterTrackerMonitorTTStub.h"
 
 //root
 #include "TLorentzVector.h"
@@ -81,6 +83,8 @@
 
 typedef edm::Ref< edm::DetSetVector< Phase2TrackerDigi >, Phase2TrackerDigi > Ref_Phase2TrackerDigi_;
 
+class DQMStore;
+
 class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
       explicit Phase2PixelStubs(const edm::ParameterSet&);
@@ -93,7 +97,7 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-
+ 
   // ----------member data ---------------------------
   edm::InputTag stubSrc_;
   edm::EDGetTokenT<edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >  StubTok_;
@@ -110,12 +114,42 @@ class Phase2PixelStubs : public edm::one::EDAnalyzer<edm::one::SharedResources> 
   // ----------Tree and branches for mini-tuple ---------------------------
   TTree* eventTree;
 
-  std::vector<float>* stub_pt;        // pt
-  std::vector<float>* stub_eta;       // eta
-  std::vector<float>* stub_phi;       // phi
-  std::vector<float>* trig_bend;
-  std::vector<int>*   nstub; //number of stubs per event
-  std::vector<float>* gentracks_eta;
+  std::vector<float>*   stub_pt;        // pt
+  std::vector<float>*   stub_eta;       // eta
+  std::vector<float>*   stub_phi;       // phi
+  std::vector<float>*   trig_bend;
+  std::vector<float>*   gentracks_eta;
+  //number of stubs
+  std::vector<int>*     nstub; //number of stubs per event
+  std::vector<int>*     stub_barrel;
+  std::vector<int>*     stub_endcap_disc;
+  std::vector<int>*     stub_endcap_ring;
+  std::vector<int>*     stub_endcap_ring_Fw;
+  std::vector<int>*     stub_endcap_disc_Fw;
+  std::vector<int>*     stub_endcap_ring_Bw;
+  std::vector<int>*     stub_endcap_disc_Bw;
+  //Global position of the stubs
+  std::vector<float>*   stub_barrel_x;//stub x position TOB
+  std::vector<float>*   stub_barrel_y;//stub y position TOB
+  std::vector<float>*   stub_endcap_Fw_x;//stub x position TEC z>0
+  std::vector<float>*   stub_endcap_Fw_y;//stub y position TEC z>0
+  std::vector<float>*   stub_endcap_Fw_z;//stub z position TEC z>0
+  std::vector<float>*   stub_endcap_Fw_r;//stub r position TEC z>0
+  std::vector<float>*   stub_endcap_Bw_x;//stub x position TEC z<0                                                             
+  std::vector<float>*   stub_endcap_Bw_y;//stub y position TEC z<0                                                                                       
+  std::vector<float>*   stub_endcap_Bw_z;//stub z position TEC z<0                                                                                        
+  std::vector<float>*   stub_endcap_Bw_r;//stub r position TEC z<0 
+  //Stub displacement - offset
+  std::vector<float>*   stub_barrel_w;//stub displacement - offset
+  std::vector<float>*   stub_barrel_o;//stub offset TOB
+  std::vector<float>*   stub_endcap_disc_w;
+  std::vector<float>*   stub_endcap_disc_o;
+  std::vector<float>*   stub_endcap_ring_w;
+  std::vector<float>*   stub_endcap_ring_o;
+  std::vector<float>*   stub_endcap_ring_w_Fw;
+  std::vector<float>*   stub_endcap_ring_o_Fw;
+  std::vector<float>*   stub_endcap_ring_w_Bw;
+  std::vector<float>*   stub_endcap_ring_o_Bw;
 };
 
 //
@@ -165,27 +199,62 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   stub_pt->clear();
   stub_eta->clear();
   stub_phi->clear();
+  stub_barrel->clear();
   trig_bend->clear();
   nstub->clear();
+  gentracks_eta->clear();
+  stub_barrel->clear();
+  stub_endcap_disc->clear();
+  stub_endcap_ring->clear();
+  stub_endcap_disc_Fw->clear();
+  stub_endcap_ring_Fw->clear();
+  stub_endcap_disc_Bw->clear();
+  stub_endcap_ring_Bw->clear();
+  stub_barrel_x->clear();
+  stub_barrel_y->clear();
+  stub_endcap_Fw_x->clear();
+  stub_endcap_Fw_y->clear();
+  stub_endcap_Fw_z->clear();
+  stub_endcap_Fw_r->clear();
+  stub_endcap_Bw_x->clear();
+  stub_endcap_Bw_y->clear();
+  stub_endcap_Bw_z->clear();
+  stub_endcap_Bw_r->clear();
+  stub_barrel_w->clear();
+  stub_barrel_o->clear();
+  stub_endcap_disc_w->clear();
+  stub_endcap_disc_o->clear();
+  stub_endcap_ring_w->clear();
+  stub_endcap_ring_o->clear();
+  stub_endcap_ring_w_Fw->clear();
+  stub_endcap_ring_o_Fw->clear();
+  stub_endcap_ring_w_Bw->clear();
+  stub_endcap_ring_o_Bw->clear();  
 
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > Phase2TrackerDigiTTStubHandle;
   iEvent.getByToken(StubTok_, Phase2TrackerDigiTTStubHandle);
   edm::Handle< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > MCTruthTTStubHandle;
-
-  //general tracks
-  edm::Handle< std::vector< reco::Track > > GeneralTracksHandle;
-  iEvent.getByToken(GeneralTracksTok_, GeneralTracksHandle);
+  
+  /// Geometry
+  edm::ESHandle<TrackerTopology> tTopoHandle;
+  const TrackerTopology* tTopo;
+  iSetup.get< TrackerTopologyRcd >().get(tTopoHandle);
+  tTopo = tTopoHandle.product();
+  
+  //general tracks**
+  //  edm::Handle< std::vector< reco::Track > > GeneralTracksHandle;
+  //iEvent.getByToken(GeneralTracksTok_, GeneralTracksHandle);
 
   //tracking particles 
   edm::Handle< std::vector< TrackingParticle > > TrackingParticleHandle;
   edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
   iEvent.getByToken(TrackingParticleTok_, TrackingParticleHandle);
   iEvent.getByToken(TrackingVertexTok_, TrackingVertexHandle);
-
+  
   edm::ESHandle< TrackerGeometry > tGeomHandle;
   iSetup.get< TrackerDigiGeometryRecord >().get(tGeomHandle);
   const TrackerGeometry* const theTrackerGeometry = tGeomHandle.product();
-
+  
   /// Loop over input Stubs
   typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator inputIter;
   typename edmNew::DetSet< TTStub< Ref_Phase2TrackerDigi_ > >::const_iterator contentIter;
@@ -221,6 +290,10 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	const GeomDet* theGeomDet = theTrackerGeometry->idToDet(detIdStub);
 	Global3DPoint posStub = theGeomDet->surface().toGlobal( theGeomDet->topology().localPosition(mp) );
 	  
+	/// Get trigger displacement/offset
+	double displStub = tempStubRef->getTriggerDisplacement();
+	double offsetStub = tempStubRef->getTriggerOffset();
+
 	double eta = posStub.eta();
 	double phi = posStub.phi();
 
@@ -230,6 +303,51 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	stub_eta->push_back(eta);
 	trig_bend->push_back(trigBend);
 
+	//std::cout << "detIdStub.subdetId() = " << detIdStub.subdetId() << std::endl;
+
+	if ( detIdStub.subdetId() == static_cast<int>(StripSubdetector::TOB) )  // Phase 2 Outer Tracker Barrel
+	  {
+	    stub_barrel->push_back(tTopo->layer(detIdStub)); 
+	    stub_barrel_x->push_back(posStub.x());
+	    stub_barrel_y->push_back(posStub.y());
+	    stub_barrel_w->push_back(displStub - offsetStub); 
+	    stub_barrel_o->push_back(offsetStub);
+	  }
+
+	else if ( detIdStub.subdetId() == static_cast<int>(StripSubdetector::TID) )  // Phase 2 Outer Tracker Endcap
+	  {
+	    int disc = tTopo->layer(detIdStub); // returns wheel
+	    int ring = tTopo->tidRing(detIdStub);
+	    stub_endcap_disc->push_back(disc);
+	    stub_endcap_ring->push_back(ring);
+	    stub_endcap_disc_w->push_back(displStub - offsetStub);
+	    stub_endcap_ring_w->push_back(displStub - offsetStub);
+	    stub_endcap_disc_o->push_back(offsetStub);
+	    stub_endcap_ring_o->push_back(offsetStub);
+
+	    if ( posStub.z() > 0 )
+	      {
+		stub_endcap_Fw_x->push_back( posStub.x());
+		stub_endcap_Fw_y->push_back( posStub.y());
+		stub_endcap_Fw_z->push_back( posStub.z());
+		stub_endcap_Fw_r->push_back( posStub.perp() );
+		stub_endcap_disc_Fw->push_back(disc);
+		stub_endcap_ring_Fw->push_back(ring);
+		stub_endcap_ring_w_Fw->push_back(displStub - offsetStub);
+		stub_endcap_ring_o_Fw->push_back(offsetStub);
+	      }
+	    else
+	      {
+		stub_endcap_Bw_x->push_back( posStub.x());
+		stub_endcap_Bw_y->push_back( posStub.y());
+		stub_endcap_Bw_z->push_back( posStub.z());
+		stub_endcap_Bw_r->push_back( posStub.perp() );
+		stub_endcap_disc_Bw->push_back(disc);
+		stub_endcap_ring_Bw->push_back(ring);
+		stub_endcap_ring_w_Bw->push_back(displStub - offsetStub);
+		stub_endcap_ring_o_Bw->push_back(offsetStub);
+		}
+	      }
 	temp++;
 
 	temp1 = 0;
@@ -242,9 +360,7 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   // ----------------------------------------------------------------------------------------------                     
   // loop over general tracks                                                                                             
   // ----------------------------------------------------------------------------------------------  
-
-  
-  int this_gtrk = 0;
+  /*
   std::vector< reco::Track >::const_iterator iterGTrk;
 
   for (iterGTrk = GeneralTracksHandle->begin(); iterGTrk != GeneralTracksHandle->end(); ++iterGTrk) {
@@ -252,16 +368,11 @@ Phase2PixelStubs::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     //edm::Ptr< reco::Track > gtrk_ptr(GeneralTracksHandle, this_gtrk);                                                  
     //this_gtrk++;
 
-    float tmp_gtrk_eta = iterGTrk->outerEta();
+    float tmp_gtrk_eta = iterGTrk->eta();
     gentracks_eta->push_back(tmp_gtrk_eta);
   }
-  /*
-  for(unsigned int i = 0; i < GeneralTracksHandle->size(); ++i) {
-    
-    //float tmp_gtrk_eta = GeneralTracksHandle->at(i).Eta();                                                                                  
-    //gentracks_eta->push_back(tmp_gtrk_eta); 
-  }
   */
+
   // ----------------------------------------------------------------------------------------------
   // loop over tracking particles
   // ----------------------------------------------------------------------------------------------
@@ -328,7 +439,33 @@ Phase2PixelStubs::beginJob()
   trig_bend = new std::vector<float>;
   gentracks_eta = new std::vector<float>;
   nstub = new std::vector<int>;
-
+  stub_barrel = new std::vector<int>;
+  stub_endcap_disc = new std::vector<int>;
+  stub_endcap_ring = new std::vector<int>;
+  stub_endcap_disc_Fw = new std::vector<int>;
+  stub_endcap_ring_Fw = new std::vector<int>;
+  stub_endcap_disc_Bw = new std::vector<int>;
+  stub_endcap_ring_Bw = new std::vector<int>;
+  stub_barrel_x = new std::vector<float>;
+  stub_barrel_y = new std::vector<float>;
+  stub_endcap_Fw_x = new std::vector<float>;
+  stub_endcap_Fw_y = new std::vector<float>;
+  stub_endcap_Fw_z = new std::vector<float>;
+  stub_endcap_Fw_r = new std::vector<float>;
+  stub_endcap_Bw_x = new std::vector<float>;
+  stub_endcap_Bw_y = new std::vector<float>;
+  stub_endcap_Bw_z = new std::vector<float>;
+  stub_endcap_Bw_r = new std::vector<float>;
+  stub_barrel_w = new std::vector<float>;
+  stub_barrel_o = new std::vector<float>;
+  stub_endcap_disc_w = new std::vector<float>;
+  stub_endcap_disc_o = new std::vector<float>;
+  stub_endcap_ring_w = new std::vector<float>;
+  stub_endcap_ring_o = new std::vector<float>;
+  stub_endcap_ring_w_Fw = new std::vector<float>;
+  stub_endcap_ring_o_Fw= new std::vector<float>;
+  stub_endcap_ring_w_Bw = new std::vector<float>;
+  stub_endcap_ring_o_Bw= new std::vector<float>;  
   // ntuple
   eventTree = fs->make<TTree>("eventTree", "Event tree");
 
@@ -338,6 +475,33 @@ Phase2PixelStubs::beginJob()
   eventTree->Branch("trig_bend",   &trig_bend);
   eventTree->Branch("nstub",     &nstub);
   eventTree->Branch("gentracks_eta",     &gentracks_eta);
+  eventTree->Branch("stub_barrel", &stub_barrel);
+  eventTree->Branch("stub_endcap_disc", &stub_endcap_disc);
+  eventTree->Branch("stub_endcap_ring", &stub_endcap_ring);
+  eventTree->Branch("stub_endcap_disc_Fw", &stub_endcap_disc_Fw);
+  eventTree->Branch("stub_endcap_ring_Fw", &stub_endcap_ring_Fw);
+  eventTree->Branch("stub_endcap_disc_Bw", &stub_endcap_disc_Bw);
+  eventTree->Branch("stub_endcap_ring_Bw", &stub_endcap_ring_Bw);
+  eventTree->Branch("stub_barrel_x", &stub_barrel_x);
+  eventTree->Branch("stub_barrel_y", &stub_barrel_y);
+  eventTree->Branch("stub_endcap_Fw_x", &stub_endcap_Fw_x);
+  eventTree->Branch("stub_endcap_Fw_y", &stub_endcap_Fw_y);
+  eventTree->Branch("stub_endcap_Fw_z", &stub_endcap_Fw_z);
+  eventTree->Branch("stub_endcap_Fw_r", &stub_endcap_Fw_r);
+  eventTree->Branch("stub_endcap_Bw_x", &stub_endcap_Bw_x);
+  eventTree->Branch("stub_endcap_Bw_y", &stub_endcap_Bw_y);
+  eventTree->Branch("stub_endcap_Bw_z", &stub_endcap_Bw_z);
+  eventTree->Branch("stub_endcap_Bw_r", &stub_endcap_Bw_r);
+  eventTree->Branch("stub_barrel_w", &stub_barrel_w);
+  eventTree->Branch("stub_barrel_o", &stub_barrel_o);
+  eventTree->Branch("stub_endcap_disc_w", &stub_endcap_disc_w);
+  eventTree->Branch("stub_endcap_disc_o", &stub_endcap_disc_o);
+  eventTree->Branch("stub_endcap_ring_w", &stub_endcap_ring_w);
+  eventTree->Branch("stub_endcap_ring_o", &stub_endcap_ring_o);
+  eventTree->Branch("stub_endcap_ring_w_Fw", &stub_endcap_ring_w_Fw);
+  eventTree->Branch("stub_endcap_ring_o_Fw", &stub_endcap_ring_o_Fw);
+  eventTree->Branch("stub_endcap_ring_w_Bw", &stub_endcap_ring_w_Bw);
+  eventTree->Branch("stub_endcap_ring_o_Bw", &stub_endcap_ring_o_Bw);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

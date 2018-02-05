@@ -7,7 +7,7 @@ import optparse
 import subprocess
 
 system("rm *.tar.gz")
-system("tar -zcf ${CMSSW_VERSION}.tar.gz -C ${CMSSW_BASE}/.. ${CMSSW_VERSION} --exclude=Phase2PixelSim/.git --exclude=Phase2PixelSim/Phase2PixelStubs/python/condor/logs --exclude=Phase2PixelSim/Phase2PixelStubs/python/condor/finishedJobs")
+system("tar -zcf ${CMSSW_VERSION}.tar.gz -C ${CMSSW_BASE}/.. ${CMSSW_VERSION} --exclude=Phase2PixelSim/.git --exclude=Phase2PixelSim/Phase2PixelStubs/python/condor/logs --exclude=Phase2PixelSim/Phase2PixelStubs/python/condor/finishedJobs --exclude=Validation --exclude=DQMOffline --exclude=VFPix/RecoBValidation --exclude=VFPix/MonteCarlo/python --exclude=VFPix/MonteCarlo/scripts --exclude=VFPix/MonteCarlo/test --exclude=.git")
 
 parser = optparse.OptionParser("usage: %prog [options]\n")
 
@@ -21,7 +21,7 @@ submitFile = '''universe = vanilla
 Executable = condorJobs.sh
 Should_Transfer_Files = YES
 WhenToTransferOutput = ON_EXIT
-Transfer_Input_Files = condorJobs.sh, ../Phase2PixelStubs_cfg.py, CMSSW_9_2_3.tar.gz
+Transfer_Input_Files = condorJobs.sh, ../Phase2PixelStubs_cfg.py, CMSSW_9_3_2.tar.gz
 x509userproxy = $ENV(X509_USER_PROXY)
 
 '''

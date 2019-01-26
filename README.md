@@ -66,8 +66,9 @@ python condorSubmit.py -n 10 -g opt8s3l
 ## Create Plots
 
 
-
 ## Adding new geometries
+Geometries from MC simulation can be added in the form of a txt file containing the appropriate "step 3" root files.  
+
 Additional geometries can be added in: 
 ```Phase2PixelSim/Phase2PixelStubs/python/geomDict.py```
 

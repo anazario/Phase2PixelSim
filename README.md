@@ -25,8 +25,8 @@ git pull origin master
 
 ## Test interactively with each geometry
 
-..*Program: Phase2PixelSim/Phase2PixelStubs/python/Phase2PixelStubs_cfg.py
-..*using options: Phase2PixelStubs_cfg.py start=(int) finish=(int) geometry=(string)
+* Program: Phase2PixelSim/Phase2PixelStubs/python/Phase2PixelStubs_cfg.py
+* using options: Phase2PixelStubs_cfg.py start=(int) finish=(int) geometry=(string)
 
 ### Available Options 
 start: number of file to start on (default 0)

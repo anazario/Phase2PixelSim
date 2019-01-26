@@ -54,7 +54,7 @@ cmsRun Phase2PixelStubs_cfg.py start=0 finish=10 geometry=opt7s4l
 * options: condorSubmit.py -n (int), -g (string), -c (no argument).
 
   * -n: number of files per job (default 5).
-  * -g: geometry to be run by the jobs (only ones recognized: opt8s4l (default), opt6s3l, opt7s4l and opt8s3l).
+  * -g: geometry to be run by the jobs (default opt8s4l). See available ones above.
   * -c: create the condor_submit.txt submit file without running. 
 
 ### Condor Example

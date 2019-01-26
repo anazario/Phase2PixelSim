@@ -41,6 +41,7 @@ git pull origin master
 
 Additional geometries can be added in geomDict.py. They are added as a list of step 3 files
 to be run over using the batchList.py script.
+
 ### Example
 ```
 cd Phase2PixelSim/Phase2PixelStubs/python
@@ -51,9 +52,9 @@ cmsRun Phase2PixelStubs_cfg.py start=0 finish=10 geometry=opt7s4l
 **Geometries are run separately**
 * Program: ```Phase2PixelSim/Phase2PixelStubs/python/condor/condorSubmit.py```
 * options: condorSubmit.py -n (int), -g (string), -c (no argument).
-* -n: number of files per job (default 5).
-* -g: geometry to be run by the jobs (only ones recognized: opt8s4l (default), opt6s3l, opt7s4l and opt8s3l).
-* -c: create the condor_submit.txt submit file without running. 
+  * -n: number of files per job (default 5).
+  * -g: geometry to be run by the jobs (only ones recognized: opt8s4l (default), opt6s3l, opt7s4l and opt8s3l).
+  * -c: create the condor_submit.txt submit file without running. 
 
 ### Condor Example
 ```

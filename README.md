@@ -41,9 +41,6 @@ git pull origin master
 * opt7s4l: 7 small discs and 4 large discs.
 * opt6s3l: 6 small discs and 3 large discs.
 
-Additional geometries can be added in geomDict.py. They are added as a list of step 3 files
-to be run over using the batchList.py script.
-
 ### Example
 ```
 cd Phase2PixelSim/Phase2PixelStubs/python
@@ -65,3 +62,22 @@ cmsenv
 cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python/condor
 python condorSubmit.py -n 10 -g opt8s3l 
 ```
+
+### Adding new geometries
+Additional geometries can be added in: 
+```Phase2PixelSim/Phase2PixelStubs/python/geomDict.py```
+
+#### Create text file from finished condor jobs:
+ ```
+ cmsenv
+ cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python
+ python batchList.py -d <condor jobs pathname> -l
+ mv <filename>.txt GeomRootFiles/
+ ```
+ 
+ The location of the text file can be added to the dictionary in geomDict.py as:
+ 
+ ```dict['<geometry option name>'] = environ["CMSSW_BASE"]+"/src/Phase2PixelSim/Phase2PixelStubs/python/GeomRootFiles/<filename>.txt"```
+ 
+ #### Example
+ ```dict['opt6s3l'] = environ["CMSSW_BASE"]+"/src/Phase2PixelSim/Phase2PixelStubs/python/GeomRootFiles/OT613_200_IT4025_opt6s3l_step3.txt"```

@@ -31,7 +31,9 @@ git pull origin master
 * start: number of file to start on (default 0).
 * finish: number of file to end on (default 1).
 * geometry: geometry to run over (default opt8s4l). 
-* usage: cmsRun Phase2PixelStubs_cfg.py start=(int) finish=(int) geometry=(string)
+### Using options 
+
+```cmsRun Phase2PixelStubs_cfg.py start=(int) finish=(int) geometry=(string)```
 
 ### Available Geometries
 * opt8s4l: Standard Geometry 4025, 8 small discs and 4 large discs.

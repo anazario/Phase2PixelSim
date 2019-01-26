@@ -25,15 +25,21 @@ git pull origin master
 
 ## Test interactively with each geometry
 
-* Program: ```Phase2PixelSim/Phase2PixelStubs/python/Phase2PixelStubs_cfg.py```
-* using options: Phase2PixelStubs_cfg.py start=(int) finish=(int) geometry=(string)
+* Configuration file location: ```Phase2PixelSim/Phase2PixelStubs/python/Phase2PixelStubs_cfg.py```
 
 ### Available Options 
 * start: number of file to start on (default 0).
 * finish: number of file to end on (default 1).
-* geometry: geometry to run over. 
+* geometry: geometry to run over (default opt8s4l). 
+* usage: cmsRun Phase2PixelStubs_cfg.py start=(int) finish=(int) geometry=(string)
 
-Additional geometries can be added in the geomDict.py. They are added as a list of step 3 files
+### Available Geometries
+* opt8s4l: Standard Geometry 4025, 8 small discs and 4 large discs.
+* opt8s3l: 8 small discs and 3 large discs.
+* opt7s4l: 7 small discs and 4 large discs.
+* opt6s3l: 6 small discs and 3 large discs.
+
+Additional geometries can be added in geomDict.py. They are added as a list of step 3 files
 to be run over using the batchList.py script.
 ### Example
 ```

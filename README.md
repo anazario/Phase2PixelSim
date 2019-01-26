@@ -63,6 +63,10 @@ cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python/condor
 python condorSubmit.py -n 10 -g opt8s3l 
 ```
 
+## Create Plots
+
+
+
 ## Adding new geometries
 Additional geometries can be added in: 
 ```Phase2PixelSim/Phase2PixelStubs/python/geomDict.py```

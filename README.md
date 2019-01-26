@@ -63,11 +63,11 @@ cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python/condor
 python condorSubmit.py -n 10 -g opt8s3l 
 ```
 
-### Adding new geometries
+## Adding new geometries
 Additional geometries can be added in: 
 ```Phase2PixelSim/Phase2PixelStubs/python/geomDict.py```
 
-#### Create text file from finished condor jobs:
+### Create text file from finished condor jobs:
  ```
  cmsenv
  cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python
@@ -79,5 +79,5 @@ Additional geometries can be added in:
  
  ```dict['<geometry option name>'] = environ["CMSSW_BASE"]+"/src/Phase2PixelSim/Phase2PixelStubs/python/GeomRootFiles/<filename>.txt"```
  
- #### Example
+ ### Example
  ```dict['opt6s3l'] = environ["CMSSW_BASE"]+"/src/Phase2PixelSim/Phase2PixelStubs/python/GeomRootFiles/OT613_200_IT4025_opt6s3l_step3.txt"```

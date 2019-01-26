@@ -48,15 +48,16 @@ cmsRun Phase2PixelStubs_cfg.py start=0 finish=10 geometry=opt7s4l
 ```
 
 ## Run on Condor
-Geometries are run separately
-Program: Phase2PixelSim/Phase2PixelStubs/python/condor/condorSubmit.py
-options: condorSubmit.py -n (int), -g (string), -c (no argument)
--n: number of files per job (default 5)
--g: geometry to be run by the jobs (only ones recognized: opt8s4l (default), opt6s3l, opt7s4l and opt8s3l)
--c: create the condor_submit.txt 
+**Geometries are run separately**
+* Program: ```Phase2PixelSim/Phase2PixelStubs/python/condor/condorSubmit.py```
+* options: condorSubmit.py -n (int), -g (string), -c (no argument).
+* -n: number of files per job (default 5).
+* -g: geometry to be run by the jobs (only ones recognized: opt8s4l (default), opt6s3l, opt7s4l and opt8s3l).
+* -c: create the condor_submit.txt submit file without running. 
 
-### Run the code
+### Condor Example
 ```
-cd Phase2PixelSim/Phase2PixelStubs/python/condor
-python condorSubmit.py (default options)
+cmsenv
+cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python/condor
+python condorSubmit.py -n 10 -g opt8s3l 
 ```

@@ -64,7 +64,7 @@ python condorSubmit.py -n 10 -g opt8s3l
 ```
 
 ## Create Plots
-The file for producing the plots is ```Phase2PixelSim/Phase2PixelStubs/python/Plot3.C``` and uses the class definitions in ```Plot2.h```. Currently the ```Plot3.C``` script makes very specific plots comparing the standard ('opt8s4l') geometry with all of the other geometries ('opt8s3l', 'opt7s4l and opt6s3l). Plots include total stub distribution, number of stubs per eta, and number of stubs in each of the barrel layers, endcap double discs and in each of the endcap disc rings for both the positive and negative regions of the CMS detector.
+The file for producing the plots is ```Phase2PixelSim/Phase2PixelStubs/python/Plot3.C``` and uses the class definitions in ```Plot2.h```. Currently the ```Plot3.C``` script makes very specific plots comparing the standard ('opt8s4l') geometry with all of the other geometries ('opt8s3l', 'opt7s4l' and 'opt6s3l'). Plots include total stub distribution, number of stubs per eta, and number of stubs in each of the barrel layers, endcap double discs and in each of the endcap disc rings for both the positive and negative regions of the CMS detector.
 
 1. hadd the condor files for each seperate geometry.
 2. Modify the lines in ```Plot3.C``` corresponding to the location of the hadded files and each of the ROOT file names.
@@ -81,8 +81,8 @@ Additional geometries can be added in:
  ```
  cmsenv
  cd $CMSSW_BASE/Phase2PixelSim/Phase2PixelStubs/python
- python batchList.py -d <condor jobs pathname> -l
- mv <filename>.txt GeomRootFiles/
+ python batchList.py -d <condor_jobs_pathname> -l
+ mv <text_filename>.txt GeomRootFiles/
  ```
  
  The location of the text file can be added to the dictionary in geomDict.py as:
